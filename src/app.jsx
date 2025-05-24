@@ -4,7 +4,6 @@ import properties from "./data/properties";
 import Navbar from "./components/ui/navbar";
 import { motion, AnimatePresence } from "framer-motion";
 
-
 export default function App() {
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(0); // 1 = next, -1 = prev
@@ -99,7 +98,8 @@ export default function App() {
             onDragEnd={handleDragEnd}
             style={{ width: "100%", height: "100%" }}
           >
-            <PropertyCard property={properties[index]} />
+            {/* Pass index as prop */}
+            <PropertyCard property={properties[index]} index={index} />
           </motion.div>
         </AnimatePresence>
       </section>
