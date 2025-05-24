@@ -1,44 +1,113 @@
 import React, { useState } from "react";
 import { motion, useAnimation } from "framer-motion";
 
-function PropertyCard({ property }) {
+// Helper function to darken a hex color
+function darkenHexColor(hex, amount = 0.15) {
+  let col = hex.replace("#", "");
+  if (col.length === 3) col = col.split("").map(c => c + c).join(""); // e.g., #abc -> #aabbcc
+
+  const num = parseInt(col, 16);
+  const r = Math.max(0, (num >> 16) - 255 * amount);
+  const g = Math.max(0, ((num >> 8) & 0x00ff) - 255 * amount);
+  const b = Math.max(0, (num & 0x0000ff) - 255 * amount);
+  return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
+}
+
+const bgColors = [
+  "#818589", // gray
+  "#230601", // dark red
+  "#4D4D4D", // dark gray
+  "#013220", // dark green
+];
+
+function PropertyCard({ property, index }) {
   const [selectedTab, setSelectedTab] = useState("amenities");
   const controls = useAnimation();
 
-  // For drag x-axis constraints (no limit)
-  const handleDragEnd = (event, info) => {
-    // You can add custom logic here if needed on drag end
-  };
+  const bgColor = bgColors[index % bgColors.length];
+  const activeTabColor = darkenHexColor(bgColor, 0.1);
+  const textColor = "white";
+  const detailsBgColor = "rgba(255 255 255 / 0.15)";
+  const infoGridBgColor = "rgba(255 255 255 / 0.15)";
 
   return (
     <motion.div
-      className="w-[66vw] max-w-[900px] bg-white rounded-3xl shadow-lg p-6 cursor-grab select-none mx-auto flex"
+      className="w-[66vw] max-w-[900px] rounded-3xl shadow-lg p-2.5 cursor-grab select-none mx-auto"
       drag="x"
       dragConstraints={false}
       dragElastic={0.2}
-      onDragEnd={handleDragEnd}
       animate={controls}
       whileTap={{ cursor: "grabbing" }}
-      style={{ minHeight: "400px" }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      style={{
+        height: "400px",
+        display: "flex",
+        gap: "0.25rem",
+        backgroundColor: bgColor,
+        color: textColor,
+        borderRadius: "1.75rem",
+        overflow: "hidden",
+        fontFamily: "'Inter', sans-serif",
+      }}
     >
-      {/* Image on left */}
-      <div className="flex-shrink-0 w-1/3 rounded-xl overflow-hidden shadow-md mr-6">
+      <div
+        style={{
+          height: "100%",
+          flexShrink: 0,
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
         <img
           src={property.image}
           alt={property.title}
-          className="w-full h-full object-cover"
-          style={{ maxHeight: "250px", minWidth: "180px" }}
+          style={{
+            height: "100%",
+            width: "auto",
+            borderRadius: "1rem",
+            boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+          }}
         />
       </div>
 
-      {/* Content on right */}
-      <div className="flex flex-col flex-grow">
-        <h2 className="text-3xl font-bold mb-2 text-gray-800">{property.title}</h2>
-        <p className="text-gray-600 mb-3">{property.overview}</p>
-        <p className="text-gray-700 mb-6">{property.description}</p>
+      <div
+        style={{
+          flexGrow: 1,
+          display: "flex",
+          flexDirection: "column",
+          gap: "0.25rem",
+          overflow: "hidden",
+          minWidth: 0,
+          minHeight: 0,
+        }}
+      >
+        <h2
+          className="font-semibold"
+          style={{ fontSize: "1.5rem", lineHeight: 1.3 }}
+        >
+          {property.title}
+        </h2>
 
-        <div className="grid grid-cols-2 gap-4 mb-6 text-sm text-gray-700">
+        <p
+          className="flex-shrink-0"
+          style={{
+            color: "rgba(255 255 255 / 0.8)",
+            fontSize: "0.9rem",
+            lineHeight: 1.4,
+          }}
+        >
+          {property.overview}
+        </p>
+
+        <div
+          className="grid grid-cols-2 gap-2"
+          style={{
+            backgroundColor: infoGridBgColor,
+            borderRadius: "1rem",
+            padding: "0.5rem",
+            boxShadow: "0 2px 6px rgba(255 255 255 / 0.2)",
+            fontSize: "0.85rem",
+          }}
+        >
           <div><strong>Address:</strong> {property.address}</div>
           <div><strong>Price:</strong> {property.price}</div>
           <div><strong>Bedrooms:</strong> {property.bedrooms}</div>
@@ -47,32 +116,64 @@ function PropertyCard({ property }) {
           <div><strong>Year Built:</strong> {property.yearBuilt}</div>
         </div>
 
-        {/* Tabs for amenities and roommates */}
-        <div>
-          <div className="flex mb-4 space-x-4">
+        <div
+          className="flex flex-col flex-grow overflow-auto"
+          style={{
+            backgroundColor: detailsBgColor,
+            borderRadius: "1rem",
+            padding: "0.5rem",
+            boxShadow: "0 2px 6px rgba(255 255 255 / 0.2)",
+            marginTop: "0.25rem",
+            fontSize: "0.85rem",
+          }}
+        >
+          <div className="flex space-x-2 mb-2">
             <button
-              className={`py-2 px-4 rounded-full font-semibold text-sm ${
-                selectedTab === "amenities" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
-              }`}
               onClick={() => setSelectedTab("amenities")}
+              style={{
+                padding: "0.25rem 0.5rem",
+                borderRadius: "9999px",
+                fontWeight: "600",
+                fontSize: "0.75rem",
+                border: "none",
+                fontFamily: "'Inter', sans-serif",
+                backgroundColor:
+                  selectedTab === "amenities" ? activeTabColor : "#e5e7eb",
+                color: selectedTab === "amenities" ? "white" : "#374151",
+              }}
             >
               Amenities
             </button>
             <button
-              className={`py-2 px-4 rounded-full font-semibold text-sm ${
-                selectedTab === "roommates" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-700"
-              }`}
               onClick={() => setSelectedTab("roommates")}
+              style={{
+                padding: "0.25rem 0.5rem",
+                borderRadius: "9999px",
+                fontWeight: "600",
+                fontSize: "0.75rem",
+                border: "none",
+                fontFamily: "'Inter', sans-serif",
+                backgroundColor:
+                  selectedTab === "roommates" ? activeTabColor : "#e5e7eb",
+                color: selectedTab === "roommates" ? "white" : "#374151",
+              }}
             >
               Roommates
             </button>
           </div>
-          <div className="text-gray-700 bg-gray-50 p-4 rounded-lg border border-gray-200 min-h-[80px]">
+
+          <div
+            className="p-1 rounded-xl min-h-[60px]"
+            style={{
+              backgroundColor: "rgba(255 255 255 / 0.35)",
+              borderRadius: "1rem",
+            }}
+          >
             {selectedTab === "amenities" ? (
               property.amenities.length > 0 ? (
                 <ul className="list-disc list-inside space-y-1">
-                  {property.amenities.map((amenity, idx) => (
-                    <li key={idx}>{amenity}</li>
+                  {property.amenities.map((a, i) => (
+                    <li key={i}>{a}</li>
                   ))}
                 </ul>
               ) : (
@@ -80,8 +181,8 @@ function PropertyCard({ property }) {
               )
             ) : property.roommates.length > 0 ? (
               <ul className="list-disc list-inside space-y-1">
-                {property.roommates.map((roommate, idx) => (
-                  <li key={idx}>{roommate}</li>
+                {property.roommates.map((r, i) => (
+                  <li key={i}>{r}</li>
                 ))}
               </ul>
             ) : (
